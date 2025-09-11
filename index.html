@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>Wach & Earn </title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" />
+    <style>
+        :root {
+            --gradient-start: #5E52F6; --gradient-end: #8338EC; --background-dark: #121212;
+            --card-dark: #1E1E1E; --text-dark-primary: #EAEAEA; --text-dark-secondary: #A0A0A0;
+            --accent-green: #05F29B; --shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            --border-radius: 20px; --transition-speed: 0.4s;
+        }
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+        body { margin: 0; padding: 0; font-family: 'Poppins', sans-serif; background-color: var(--background-dark); color: var(--text-dark-primary); height: 100vh; overflow: hidden; }
+        .container { width: 100%; height: 100%; max-width: 480px; margin: 0 auto; display: flex; flex-direction: column; background-color: var(--background-dark); }
+        header { padding: 12px 20px; display: flex; align-items: center; justify-content: space-between; background-color: rgba(30, 30, 30, 0.7); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100; }
+        .header-profile { display: flex; align-items: center; gap: 12px; }
+        .header-avatar { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; border: 2px solid var(--gradient-start); }
+        .header-info .username { font-size: 16px; font-weight: 600; margin: 0; }
+        .header-info .balance { font-size: 13px; font-weight: 500; color: var(--accent-green); }
+        .marquee-container { overflow: hidden; background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); color: white; padding: 8px 0; font-size: 14px; font-weight: 500; white-space: nowrap; }
+        .marquee-text { display: inline-block; padding-left: 100%; animation: marquee-scroll 20s linear infinite; }
+        @keyframes marquee-scroll { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
+        main { flex-grow: 1; overflow-y: auto; padding: 20px 20px 90px 20px; }
+        .view { display: none; animation: fadeIn 0.5s ease-out; }
+        .view.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: scale(0.98); } to { opacity: 1; transform: scale(1); } }
+        .card { background-color: var(--card-dark); border-radius: var(--border-radius); padding: 20px; margin-bottom: 20px; box-shadow: var(--shadow); border: 1px solid rgba(255, 255, 255, 0.1); }
+        h2 { font-size: 24px; font-weight: 700; }
+        p.secondary-text { color: var(--text-dark-secondary); margin-top: -10px; margin-bottom: 20px; }
+        .home-gif-container { text-align: center; }
+        .home-gif { width: 80%; max-width: 250px; margin: 0 auto; }
+        .balance-card { text-align: center; }
+        .balance-card p { font-size: 16px; color: var(--text-dark-secondary); margin: 0;}
+        .balance-card h1 { font-size: 42px; font-weight: 700; margin: 10px 0; background: -webkit-linear-gradient(45deg, var(--gradient-start), var(--accent-green)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .main-action-btn { background: linear-gradient(90deg, var(--gradient-start), var(--gradient-end)); color: white; border: none; width: 100%; padding: 16px; border-radius: 12px; font-size: 18px; font-weight: 600; cursor: pointer; box-shadow: 0 4px 15px rgba(94, 82, 246, 0.4); }
+        .task { display: flex; align-items: center; background-color: rgba(255, 255, 255, 0.05); padding: 15px; border-radius: 15px; margin-bottom: 15px; transition: transform 0.2s ease, background-color 0.2s ease; cursor: pointer; }
+        .task:active { transform: scale(0.97); }
+        .task .icon-container { width: 50px; height: 50px; background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end)); border-radius: 12px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 22px; }
+        .task .details { flex-grow: 1; }
+        .task .details h4 { margin: 0; font-weight: 600; font-size: 16px; }
+        .task .details p { margin: 4px 0 0; font-size: 13px; color: var(--text-dark-secondary); }
+        .task .reward { background-color: var(--accent-green); color: #121212; padding: 6px 12px; border-radius: 8px; font-weight: 700; font-size: 14px; }
+        .task[disabled] { opacity: 0.4; cursor: not-allowed; }
+        .task[disabled] .icon-container { filter: grayscale(1); }
+        .task[disabled] .reward { background-color: #555; color: #aaa; }
+        .profile-card { text-align: center; }
+        .profile-avatar { width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border: 3px solid var(--gradient-start); margin-bottom: 15px; }
+        .profile-username { font-size: 22px; font-weight: 700; margin: 0; }
+        .profile-userid { font-size: 14px; color: var(--text-dark-secondary); margin-top: 5px; }
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px;}
+        .stat-box { background-color: rgba(255,255,255,0.05); padding: 15px; border-radius: 12px; text-align: center;}
+        .stat-box .value { font-size: 20px; font-weight: 600; }
+        .stat-box .label { font-size: 13px; color: var(--text-dark-secondary); margin-top: 5px;}
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; font-weight: 500; margin-bottom: 8px; font-size: 14px; color: var(--text-dark-secondary); }
+        .form-group input, .form-group select { width: 100%; padding: 14px; border: 1px solid rgba(255,255,255,0.1); background-color: #2a2a2a; color: white; border-radius: 10px; font-size: 16px; }
+        .footer-nav { position: fixed; bottom: 0; left: 0; right: 0; width: 100%; max-width: 480px; margin: 0 auto; display: flex; justify-content: space-around; background-color: var(--card-dark); padding: 10px 0; border-top: 1px solid rgba(255,255,255,0.1); }
+        .nav-button { display: flex; flex-direction: column; align-items: center; color: var(--text-dark-secondary); background: none; border: none; font-size: 11px; font-weight: 500; transition: color 0.2s; cursor: pointer; flex-grow: 1; }
+        .nav-button .icon { font-size: 20px; margin-bottom: 5px; }
+        .nav-button.active { color: var(--gradient-start); }
+        #toast { position: fixed; bottom: -100px; left: 50%; transform: translateX(-50%); background-color: #28a745; color: white; padding: 12px 25px; border-radius: 10px; font-size: 15px; font-weight: 500; z-index: 1001; transition: bottom 0.5s ease; }
+        #toast.show { bottom: 100px; }
+        #loader { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--background-dark); display: flex; align-items: center; justify-content: center; z-index: 9999; flex-direction: column; }
+        .spinner { width: 50px; height: 50px; border: 5px solid rgba(94, 82, 246, 0.2); border-top-color: var(--gradient-end); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body data-theme="dark">
+    <div id="loader"><div class="spinner"></div><p style="margin-top: 15px; color: var(--text-dark-secondary);">Loading...</p></div>
+    <div id="toast"></div>
+
+    <div class="container" style="display: none;">
+        <header>
+            <div class="header-profile">
+                <img id="header-avatar" class="header-avatar" src="" alt="A">
+                <div class="header-info">
+                    <h3 id="header-username" class="username">User</h3>
+                    <p id="header-balance" class="balance">USDT 0.00</p>
+                </div>
+            </div>
+        </header>
+
+        <div class="marquee-container">
+            <div id="admin-marquee" class="marquee-text"></div>
+        </div>
+
+        <main>
+            <!-- Home View -->
+            <div id="home-view" class="view active">
+                <div class="home-gif-container">
+                     <img src="https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEiGmsJtfPOG2YIWB8EP4k3AG8Ad0n4Cd3y2qHCZTYuIMHOnB6VsLIFfKKSjXD6D5T70pqVypyJyYmjbDHnbHBPbUFasTQi9BkDfd9HQKnkuuJoOtKCssSiU-eBa4v8l6sdaxJ_2IEvoezKInSgNDlhPByIxPu9UGhJEgSCxnRxYNRJGgldULw6Vtxhd8Mw/s498/money-tree.gif" class="home-gif" alt="Earning GIF">
+                </div>
+                <div class="card balance-card">
+                    <p>Your Total Balance</p>
+                    <h1 id="home-balance-amount">USDT 0.00</h1>
+                    <button class="main-action-btn" onclick="showView('earn-view')">Start Earning Now</button>
+                </div>
+            </div>
+
+            <!-- Earn View -->
+            <div id="earn-view" class="view">
+                <h2>Task Center</h2>
+                <p class="secondary-text">Complete tasks to get rewards.</p>
+                <div id="task-list">
+                    <!-- Default Tasks will be dynamically inserted here -->
+                </div>
+                <hr style="border-color: rgba(255,255,255,0.1); margin: 25px 0;">
+                <div id="custom-task-list">
+                    <!-- Custom Tasks will be dynamically inserted here -->
+                </div>
+            </div>
+            
+            <!-- Withdraw View -->
+            <div id="withdraw-view" class="view">
+                <h2>Withdraw Funds</h2>
+                <p class="secondary-text">Cash out your earnings.</p>
+                 <div class="card">
+                     <p style="text-align:center; color: var(--text-dark-secondary);">Your Current Balance: <strong id="withdraw-balance" style="color:var(--accent-green);">USDT 0.00</strong></p>
+                 </div>
+                 <div class="card">
+                     <form id="withdraw-form">
+                        <div class="form-group">
+                            <label for="withdrawal-method">Payment Method</label>
+                            <select id="withdrawal-method" required>
+                                <option value="">Select a method</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="withdrawal-amount">Amount (USD)</label>
+                            <input type="number" step="0.01" id="withdrawal-amount" placeholder="Enter amount to withdraw" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="wallet-address">Wallet Address</label>
+                            <input type="text" id="wallet-address" placeholder="Enter your wallet address" required>
+                        </div>
+                        <button type="submit" class="main-action-btn" style="margin-top: 10px;">Send Withdraw Request</button>
+                     </form>
+                 </div>
+            </div>
+
+            <!-- Profile View -->
+            <div id="profile-view" class="view">
+                <div class="card profile-card">
+                     <img id="profile-avatar" class="profile-avatar" src="" alt="Avatar">
+                     <h2 id="profile-username" class="profile-username"></h2>
+                     <p id="profile-userid" class="profile-userid"></p>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-box">
+                        <div id="profile-balance" class="value">USDT 0.00</div>
+                        <div class="label">Current Balance</div>
+                    </div>
+                     <div class="stat-box">
+                        <div id="profile-ads-watched" class="value">0</div>
+                        <div class="label">Total Ads Watched</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+
+        <nav class="footer-nav">
+            <button class="nav-button active" onclick="showView('home-view')"><i class="icon fas fa-home"></i>Home</button>
+            <button class="nav-button" onclick="showView('earn-view')"><i class="icon fas fa-tasks"></i>Earn</button>
+            <button class="nav-button" onclick="showView('withdraw-view')"><i class="icon fas fa-wallet"></i>Withdraw</button>
+            <button class="nav-button" onclick="showView('profile-view')"><i class="icon fas fa-user-circle"></i>Profile</button>
+        </nav>
+    </div>
+
+    <script src='//libtl.com/sdk.js' data-zone='9722184' data-sdk='show_9722184'></script>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+
+    <script>
+  const firebaseConfig = {
+  apiKey: "AIzaSyB8mVOFccSfAmoWJVuysg_oXq7tqK86GbM",
+  authDomain: "arjo-chakma.firebaseapp.com",
+  projectId: "arjo-chakma",
+  storageBucket: "arjo-chakma.firebasestorage.app",
+  messagingSenderId: "395540063550",
+  appId: "1:395540063550:web:9884a1d6bc438a89a3786f",
+  measurementId: "G-0DGZNTZVR8"
+};
+
+        let tgUser, db, appConfig = {}, userProfile = { balanceUSD: 0, adsWatched: 0, interstitialCount: 0, completedTasks: {} };
+
+        function showToast(message, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.style.backgroundColor = isError ? '#FF3B30' : '#28a745';
+            toast.classList.add('show');
+            setTimeout(() => { toast.classList.remove('show'); }, 3000);
+        }
+
+        function showView(viewId) {
+            document.querySelectorAll('.view').forEach(view => view.classList.remove('active'));
+            document.getElementById(viewId).classList.add('active');
+            document.querySelectorAll('.nav-button').forEach(btn => btn.classList.remove('active'));
+            const activeBtn = document.querySelector(`.nav-button[onclick="showView('${viewId}')"]`);
+            if (activeBtn) activeBtn.classList.add('active');
+            Telegram.WebApp.HapticFeedback.selectionChanged();
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            Telegram.WebApp.ready();
+            Telegram.WebApp.expand();
+            tgUser = Telegram.WebApp.initDataUnsafe.user;
+
+            if (!tgUser) { 
+                document.querySelector('#loader p').innerText = "Please open the app from Telegram.";
+                return; 
+            }
+
+            firebase.initializeApp(firebaseConfig);
+            db = firebase.database();
+            loadInitialData();
+        });
+
+        function loadInitialData() {
+            db.ref('config').on('value', snap => {
+                appConfig = snap.val() || {};
+                document.getElementById('admin-marquee').innerText = appConfig.marqueeText || "Welcome to Earning Technology!";
+                renderDefaultTasks();
+                updateAllUI();
+            });
+            
+            db.ref('paymentMethods').on('value', snap => {
+                const select = document.getElementById('withdrawal-method');
+                select.innerHTML = '<option value="">Select a method</option>';
+                if (snap.exists()) {
+                    snap.forEach(child => {
+                        select.innerHTML += `<option value="${child.val().name}">${child.val().name}</option>`;
+                    });
+                }
+            });
+
+            db.ref('customTasks').on('value', snap => {
+                renderCustomTasks(snap);
+            });
+
+            db.ref('users/' + tgUser.id).on('value', (snapshot) => {
+                userProfile = { balanceUSD: 0, adsWatched: 0, interstitialCount: 0, completedTasks: {}, ...snapshot.val() };
+                updateAllUI();
+                renderDefaultTasks(); // Re-render tasks based on updated user profile
+                renderCustomTasks(); // Re-render custom tasks as well
+                document.getElementById('loader').style.display = 'none';
+                document.querySelector('.container').style.display = 'flex';
+            });
+        }
+        
+        function updateAllUI() {
+            if (!tgUser || !appConfig) return;
+            const balance = (userProfile.balanceUSD || 0).toFixed(4);
+            document.getElementById('header-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${tgUser.first_name || 'U'}&background=random`;
+            document.getElementById('header-username').innerText = tgUser.first_name || 'User';
+            document.getElementById('header-balance').innerText = `USDT ${balance}`;
+            document.getElementById('home-balance-amount').innerText = `USDT ${balance}`;
+            document.getElementById('withdraw-balance').innerText = `USDT ${balance}`;
+            document.getElementById('profile-avatar').src = tgUser.photo_url || `https://ui-avatars.com/api/?name=${tgUser.first_name || 'U'}&size=80&background=random`;
+            document.getElementById('profile-username').innerText = tgUser.first_name || 'User';
+            document.getElementById('profile-userid').innerText = `@${tgUser.username || tgUser.id}`;
+            document.getElementById('profile-balance').innerText = `USDT ${balance}`;
+            document.getElementById('profile-ads-watched').innerText = userProfile.adsWatched || 0;
+        }
+
+        function renderDefaultTasks() {
+            if (!appConfig) return;
+            const taskList = document.getElementById('task-list');
+            taskList.innerHTML = '';
+            
+            const interstitialReward = appConfig.interstitialRewardUSD || 0.001;
+            const interstitialTask = createTaskElement('rewarded_interstitial', 'fa-play-circle', 'Watch Video Ad', `Earn per ad view`, interstitialReward, () => handleDefaultTaskClick('rewarded_interstitial', interstitialReward));
+            taskList.appendChild(interstitialTask);
+
+            const popupReward = appConfig.popupRewardUSD || 0.002;
+            const popupTask = createTaskElement('rewarded_popup', 'fa-window-maximize', 'Popup Ad', `${userProfile.interstitialCount || 0}/10 videos watched to unlock`, popupReward, () => handleDefaultTaskClick('rewarded_popup', popupReward));
+            if ((userProfile.interstitialCount || 0) < 10) {
+                popupTask.setAttribute('disabled', 'true');
+            }
+            taskList.appendChild(popupTask);
+        }
+
+        function renderCustomTasks(snapshot) {
+            const list = document.getElementById('custom-task-list');
+            list.innerHTML = '';
+            db.ref('customTasks').once('value', snap => {
+                 if (!snap.exists()) return;
+                 snap.forEach(child => {
+                    const taskData = child.val();
+                    const taskKey = child.key;
+                    const isCompleted = userProfile.completedTasks && userProfile.completedTasks[taskKey];
+
+                    const taskElement = createTaskElement(
+                        taskKey, 'fa-star', taskData.title, taskData.description, taskData.reward, 
+                        () => handleCustomTaskClick(taskKey, taskData.url, taskData.reward)
+                    );
+
+                    if (isCompleted) {
+                        taskElement.setAttribute('disabled', 'true');
+                        taskElement.querySelector('.reward').innerText = 'Done';
+                    }
+                    list.appendChild(taskElement);
+                 });
+            });
+        }
+        
+        function createTaskElement(id, icon, title, desc, reward, onClickHandler) {
+            const task = document.createElement('div');
+            task.className = 'task';
+            task.id = `${id}-task`;
+            task.onclick = onClickHandler;
+            task.innerHTML = `
+                <div class="icon-container"><i class="fas ${icon}"></i></div>
+                <div class="details">
+                    <h4>${title}</h4>
+                    <p>${desc}</p>
+                </div>
+                <div class="reward">$${reward.toFixed(4)}</div>
+            `;
+            return task;
+        }
+
+        function handleDefaultTaskClick(type, reward) {
+            const element = document.getElementById(`${type}-task`);
+            if (element.hasAttribute('disabled')) {
+                showToast("This task is currently locked.", true);
+                return;
+            }
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            showToast("Loading ad...");
+            show_9722184(type === 'rewarded_popup' ? 'pop' : '').then(() => {
+                grantDefaultReward(type, reward);
+            }).catch(err => {
+                showToast("Could not display ad.", true);
+            });
+        }
+        
+        function handleCustomTaskClick(key, url, reward) {
+            const element = document.getElementById(`${key}-task`);
+             if (element.hasAttribute('disabled')) {
+                showToast("You have already completed this task.", true);
+                return;
+            }
+            Telegram.WebApp.HapticFeedback.impactOccurred('light');
+            // For script-based tasks, you might need a more complex handler.
+            // For links, this is sufficient.
+            if(url.startsWith('http') || url.startsWith('tg:')) {
+                Telegram.WebApp.openLink(url);
+            } else {
+                // Potentially evaluate script if you trust the source, but it's risky.
+                // For now, we just reward on click.
+                console.log("Executing task:", url);
+            }
+            grantCustomReward(key, reward);
+        }
+
+        function grantDefaultReward(type, reward) {
+            const userRef = db.ref('users/' + tgUser.id);
+            userRef.transaction(current => {
+                if (!current) current = { balanceUSD: 0, adsWatched: 0, interstitialCount: 0, completedTasks: {} };
+                current.balanceUSD = (current.balanceUSD || 0) + reward;
+                current.adsWatched = (current.adsWatched || 0) + 1;
+                if (type === 'rewarded_interstitial') {
+                    current.interstitialCount = (current.interstitialCount || 0) + 1;
+                } else if (type === 'rewarded_popup') {
+                    current.interstitialCount = 0; // Reset after popup
+                }
+                return current;
+            }).then(result => {
+                if (result.committed) {
+                    showToast(`Congratulations! You received $${reward.toFixed(4)}.`);
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                }
+            });
+        }
+        
+        function grantCustomReward(key, reward) {
+            const userRef = db.ref('users/' + tgUser.id);
+            userRef.transaction(current => {
+                if (!current) current = { balanceUSD: 0, adsWatched: 0, interstitialCount: 0, completedTasks: {} };
+                
+                // Ensure completedTasks object exists
+                if (!current.completedTasks) {
+                    current.completedTasks = {};
+                }
+                
+                // Grant reward only if not already completed
+                if (!current.completedTasks[key]) {
+                    current.balanceUSD = (current.balanceUSD || 0) + reward;
+                    current.completedTasks[key] = true;
+                }
+                return current;
+            }).then(result => {
+                 if (result.committed) {
+                    showToast(`Task complete! You received $${reward.toFixed(4)}.`);
+                    Telegram.WebApp.HapticFeedback.notificationOccurred('success');
+                 } else {
+                    showToast("You have already completed this task.", true);
+                 }
+            });
+        }
+        
+        document.getElementById('withdraw-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const minWithdraw = appConfig.minWithdrawUSD || 1;
+            const amount = parseFloat(document.getElementById('withdrawal-amount').value);
+            const method = document.getElementById('withdrawal-method').value;
+            const address = document.getElementById('wallet-address').value.trim();
+
+            if (!method || !amount || !address) {
+                showToast("Please fill in all fields.", true); return;
+            }
+            if (amount < minWithdraw) {
+                showToast(`Minimum withdrawal amount is $${minWithdraw.toFixed(2)}.`, true); return;
+            }
+            if (amount > userProfile.balanceUSD) {
+                showToast("You do not have enough balance.", true); return;
+            }
+            const requestData = {
+                userId: tgUser.id, username: tgUser.username || tgUser.first_name,
+                paymentMethod: method, walletAddress: address, amount: amount,
+                status: 'pending', timestamp: firebase.database.ServerValue.TIMESTAMP
+            };
+            const userRef = db.ref('users/' + tgUser.id + '/balanceUSD');
+            const newBalance = userProfile.balanceUSD - amount;
+            db.ref('withdrawal_requests').push(requestData)
+                .then(() => userRef.set(newBalance))
+                .then(() => {
+                    showToast("Your withdrawal request has been submitted.");
+                    document.getElementById('withdraw-form').reset();
+                })
+                .catch(err => showToast("Failed to submit request.", true));
+        });
+    </script>
+
+</body>
+</html>
